@@ -10,6 +10,6 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 public class WSConfigurer implements WebSocketConfigurer {
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(new wsChat(), "/wsChat").setAllowedOrigins("*").addInterceptors(new HttpSessionHandshakeInterceptor());
+		registry.addHandler(new WsChat(), "/wsChat").setAllowedOrigins("*").addInterceptors(new HttpSessionHandshakeInterceptor());
 	}
 }
