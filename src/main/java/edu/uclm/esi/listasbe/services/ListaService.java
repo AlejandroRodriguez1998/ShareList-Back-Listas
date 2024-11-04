@@ -11,6 +11,7 @@ import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
+import edu.uclm.esi.listasbe.ws.WsListas;
 
 
 @Service //anotaciones para que se identifique que es cada cosa
@@ -24,6 +25,9 @@ public class ListaService {
 	
 	@Autowired
 	private ProductoDao productoDao;
+	
+	@Autowired
+	private WsListas wsListas;
 	
 	public Lista crearLista(String nombre, String token) {
 		/*boolean correcto = this.proxy.validar(token);
@@ -51,6 +55,8 @@ public class ListaService {
 		
 		producto.setLista(lista);
 		this.productoDao.save(producto);
+		
+		this.wsListas.notificar(idLista, producto);
 		
 		return lista;
 	}

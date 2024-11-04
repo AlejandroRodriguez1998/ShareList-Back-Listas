@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -20,9 +21,13 @@ public class Lista {
 	@OneToMany(mappedBy = "lista")
 	private List<Producto> productos;
 	
+	@ElementCollection
+	private List<String> emailsUsuarios;
+	
 	public Lista() {
 		this.id = UUID.randomUUID().toString();
 		this.productos = new ArrayList<>();
+		this.emailsUsuarios = new ArrayList<>();
 	}
 
 	public String getId() {
@@ -31,6 +36,14 @@ public class Lista {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public List<String> getEmailsUsuarios() {
+		return emailsUsuarios;
+	}
+	
+	public void setEmailsUsuarios(List<String> emailsUsuarios) {
+		this.emailsUsuarios = emailsUsuarios;
 	}
 
 	public String getNombre() {
