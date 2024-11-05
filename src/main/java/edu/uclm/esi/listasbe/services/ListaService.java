@@ -1,7 +1,9 @@
 package edu.uclm.esi.listasbe.services;
 
+import java.io.IOException;
 import java.util.Optional;
 
+import edu.uclm.esi.listasbe.ws.WsListas;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ public class ListaService {
 	
 	@Autowired
 	private ProductoDao productoDao;
+
+	@Autowired
+	private WsListas wsListas;
 	
 	public Lista crearLista(String nombre, String token) {
 		/*boolean correcto = this.proxy.validar(token);
@@ -39,7 +44,7 @@ public class ListaService {
 		return lista;
 	}
 	
-	public Lista addProducto(String idLista, Producto producto) {
+	public Lista addProducto(String idLista, Producto producto) throws IOException {
 		Optional<Lista> optLista = this.listaDao.findById(idLista);
 		
 		if(optLista.isEmpty()) {
@@ -51,6 +56,8 @@ public class ListaService {
 		
 		producto.setLista(lista);
 		this.productoDao.save(producto);
+
+		this.wsListas.notificar(idLista, producto);
 		
 		return lista;
 	}

@@ -2,6 +2,7 @@ package edu.uclm.esi.listasbe.http;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class ListaController {
 	}
 	
 	@PostMapping("/addProducto")
-	public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) {
+	public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) throws IOException {
 				
 		if(producto.getNombre().isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio");

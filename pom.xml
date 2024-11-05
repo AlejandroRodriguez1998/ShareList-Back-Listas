@@ -62,9 +62,16 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>edu.uclm.esi</groupId>
-			<artifactId>fakeAccountsBE</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20240303</version>
 		</dependency>
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>27.1.0</version>
+			<scope>compile</scope>
+		</dependency>
+
 	</dependencies>
 </project>
