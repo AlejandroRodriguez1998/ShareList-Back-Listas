@@ -2,8 +2,10 @@ package edu.uclm.esi.listasbe.http;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,8 +30,10 @@ public class ListaController {
 	private ListaService listaService;
 	
 	@PostMapping("/crearLista")
-	public Lista crearLista(@RequestBody String nombre) {
-		nombre = nombre.trim();
+	public Lista crearLista(@RequestBody String json) {
+		JSONObject jso = new JSONObject(json);
+		
+		String nombre = jso.getString("nombre").trim();
 		if(nombre.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre no puede estar vacio");
 		}
@@ -37,7 +42,7 @@ public class ListaController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista esta limitado a 80 caracteres");
 		}
 		
-		return this.listaService.crearLista(nombre, "1234");
+		return this.listaService.crearLista(nombre, jso.getString("token"));
 	}
 	
 	@PostMapping("/addProducto")
@@ -68,13 +73,11 @@ public class ListaController {
 	}
 	
 	@GetMapping("/obtenerListas")
-	public Iterable<Lista> obtenerListas() {
-		return this.listaService.obtenerListas();
+	public List<Lista> obtenerListas(@RequestParam String email) {
+		return this.listaService.obtenerListas(email);
 	}
 	
-	
 }
-
 
 
 

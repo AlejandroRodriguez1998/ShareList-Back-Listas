@@ -15,22 +15,21 @@ import org.springframework.stereotype.Service;
 public class ProxyDEU {
 	
 	public boolean validar(String token) {
-		String url = "http://localhost:9000/tokens/validar";
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpPut httpPut = new HttpPut(url);
-            httpPut.setEntity(new StringEntity(token));
-            httpPut.setHeader("Content-Type", "text/plain"); 
+	    String url = "http://localhost:8080/tokens/validar";
+	    
+	    try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+	        HttpPut httpPut = new HttpPut(url);
+	        httpPut.setEntity(new StringEntity(token));
+	        httpPut.setHeader("Content-Type", "text/plain");
 
-            HttpContext context = new BasicHttpContext();
-            
-            try (CloseableHttpResponse response = httpClient.execute(httpPut,context)) {
-                System.out.println("Response status: " + response.getCode());
-                return response.getCode() == 200;
-            }
-        } catch (Exception e) {
-        	System.out.println(e.getMessage());
-        	return false;
-        }
+	        try (CloseableHttpResponse response = httpClient.execute(httpPut)) {
+	            //System.out.println("Response status: " + response.getCode());
+	            return response.getCode() == 200;
+	        }
+	    } catch (Exception e) {
+	        System.err.println("Error al validar el token: " + e.getMessage());
+	        return false;
+	    }
 	}
 
 }

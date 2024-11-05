@@ -22,9 +22,14 @@ import edu.uclm.esi.listasbe.model.Producto;
 public class WsListas extends TextWebSocketHandler {
 	
 	@Autowired
-	private ListaDao listaDao;
+	private static ListaDao listaDao;
 	
 	private Map<String, List<WebSocketSession>> sessionsByIdLista = new ConcurrentHashMap<>();
+	
+	@Autowired
+	public void setListaDao(ListaDao listaDao) {
+		WsListas.listaDao = listaDao;
+	}
 	
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception { //Este metodo es cuando invocas la conexion 

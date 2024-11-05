@@ -1,5 +1,7 @@
 package edu.uclm.esi.listasbe.services;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +32,11 @@ public class ListaService {
 	private WsListas wsListas;
 	
 	public Lista crearLista(String nombre, String token) {
-		/*boolean correcto = this.proxy.validar(token);
+		boolean correcto = this.proxy.validar(token);
 		
 		if(!correcto)
 			throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED);
-		*/
+		
 		Lista lista = new Lista();
 		lista.setNombre(nombre);
 		
@@ -77,12 +79,18 @@ public class ListaService {
 		
 	}
 
-	public Iterable<Lista> obtenerListas() {
-		return this.listaDao.findAll();
+	public List<Lista> obtenerListas(String email) {
+		List<Lista> result = new ArrayList<>();
+		List<String> ids = this.listaDao.getListasDe(email);
+		
+		for(String id: ids) {
+			result.add(this.listaDao.findById(id).get());
+		}
+		
+		return result;
 		
 	}
 	
-
 }
 
 
