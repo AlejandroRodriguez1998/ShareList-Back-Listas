@@ -12,5 +12,7 @@ public interface ListaDao extends CrudRepository<Lista, String> {
 
 	@Query(value = "select lista_id from lista_emails_usuarios where emails_usuarios=:email", nativeQuery = true)
 	List<String> getListasDe(@Param("email") String email);
+
+	List<Lista> findByPropietario(String email);
 	
 }

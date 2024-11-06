@@ -54,26 +54,29 @@ public class WsListas extends TextWebSocketHandler {
 	public void notificar(String idLista, Producto producto) {
 		List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
 		
-		JSONObject jso = new JSONObject();
-		jso.put("tipo","actualizacion");
-		jso.put("idLista", idLista);
-		jso.put("unidadesCompradas", producto.getUdsCompradas());
-		jso.put("unidadesPedidas", producto.getUdsPedidas());
-		jso.put("nombreProducto", producto.getNombre());
+		if (interesados != null) {
 		
-		TextMessage message = new TextMessage(jso.toString());
-		
-		for (WebSocketSession target: interesados) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						target.sendMessage(message); // Envia un mensaje al cliente mediante la session.
-					} catch (IOException e) {
-						//WsListas.this.sessions.remove(target.getId());
+			JSONObject jso = new JSONObject();
+			jso.put("tipo","actualizacion");
+			jso.put("idLista", idLista);
+			jso.put("unidadesCompradas", producto.getUdsCompradas());
+			jso.put("unidadesPedidas", producto.getUdsPedidas());
+			jso.put("nombreProducto", producto.getNombre());
+			
+			TextMessage message = new TextMessage(jso.toString());
+			
+			for (WebSocketSession target: interesados) {
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							target.sendMessage(message); // Envia un mensaje al cliente mediante la session.
+						} catch (IOException e) {
+							//WsListas.this.sessions.remove(target.getId());
+						}
 					}
-				}
-			}).start();
+				}).start();
+			}
 		}
 		
 	}

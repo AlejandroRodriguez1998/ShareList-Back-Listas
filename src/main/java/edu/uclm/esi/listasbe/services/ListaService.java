@@ -2,6 +2,7 @@ package edu.uclm.esi.listasbe.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +32,24 @@ public class ListaService {
 	@Autowired
 	private WsListas wsListas;
 	
-	public Lista crearLista(String nombre, String token) {
-		boolean correcto = this.proxy.validar(token);
+	public Lista crearLista(String nombre, String token, String email) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
+
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		}
 		
-		if(!correcto)
-			throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED);
+		if (!resultado.get("isPremium")) {
+		    List<Lista> cantidadListas = this.listaDao.findByPropietario(email);
+
+		    if (cantidadListas.size() == 2) {
+		        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 2 listas");
+		    }
+		}
 		
 		Lista lista = new Lista();
 		lista.setNombre(nombre);
+		lista.setPropietario(email);
 		
 		this.listaDao.save(lista);
 		
@@ -80,15 +91,17 @@ public class ListaService {
 	}
 
 	public List<Lista> obtenerListas(String email) {
-		List<Lista> result = new ArrayList<>();
-		List<String> ids = this.listaDao.getListasDe(email);
-		
-		for(String id: ids) {
-			result.add(this.listaDao.findById(id).get());
+	    return this.listaDao.findByPropietario(email);
+	}
+
+	public void borrarLista(String idLista, String token) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
+
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
 		}
 		
-		return result;
-		
+	    this.listaDao.deleteById(idLista);
 	}
 	
 }

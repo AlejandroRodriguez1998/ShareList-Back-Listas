@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -17,6 +19,9 @@ public class Lista {
 	private String id;
 	@Column(length = 80)
 	private String nombre;
+	
+	@JsonIgnore
+	private String propietario;
 
 	@OneToMany(mappedBy = "lista")
 	private List<Producto> productos;
@@ -38,20 +43,20 @@ public class Lista {
 		this.id = id;
 	}
 	
-	public List<String> getEmailsUsuarios() {
-		return emailsUsuarios;
-	}
-	
-	public void setEmailsUsuarios(List<String> emailsUsuarios) {
-		this.emailsUsuarios = emailsUsuarios;
-	}
-
 	public String getNombre() {
 		return nombre;
 	}
 
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
+	}
+	
+	public String getPropietario() {
+		return propietario;
+	}
+	
+	public void setPropietario(String propietario) {
+		this.propietario = propietario;
 	}
 	
 	public void add(Producto producto) {
@@ -64,5 +69,13 @@ public class Lista {
 	
 	public void setProductos(List<Producto> productos) {
 		this.productos = productos;
+	}
+	
+	public List<String> getEmailsUsuarios() {
+		return emailsUsuarios;
+	}
+	
+	public void setEmailsUsuarios(List<String> emailsUsuarios) {
+		this.emailsUsuarios = emailsUsuarios;
 	}
 }

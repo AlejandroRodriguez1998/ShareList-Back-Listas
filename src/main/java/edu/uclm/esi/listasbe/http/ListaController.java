@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,19 +31,20 @@ public class ListaController {
 	private ListaService listaService;
 	
 	@PostMapping("/crearLista")
-	public Lista crearLista(@RequestBody String json) {
-		JSONObject jso = new JSONObject(json);
-		
-		String nombre = jso.getString("nombre").trim();
-		if(nombre.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre no puede estar vacio");
-		}
-		
-		if(nombre.length() > 80) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista esta limitado a 80 caracteres");
-		}
-		
-		return this.listaService.crearLista(nombre, jso.getString("token"));
+	public Lista crearLista(@RequestBody Map<String, String> request) {
+	    String nombre = request.get("nombre").trim();
+	    String token = request.get("token");
+	    String email = request.get("email");
+
+	    if (nombre.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre no puede estar vacío");
+	    }
+
+	    if (nombre.length() > 80) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista está limitado a 80 caracteres");
+	    }
+
+	    return this.listaService.crearLista(nombre, token, email);
 	}
 	
 	@PostMapping("/addProducto")
@@ -50,13 +52,11 @@ public class ListaController {
 				
 		if(producto.getNombre().isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio");
-
 		}
 		
 		if(producto.getNombre().length() > 80) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista esta limitado a 80 caracteres");
 		}
-		
 		
 		String idLista = request.getHeader("idLista");
 		
@@ -75,6 +75,18 @@ public class ListaController {
 	@GetMapping("/obtenerListas")
 	public List<Lista> obtenerListas(@RequestParam String email) {
 		return this.listaService.obtenerListas(email);
+	}
+	
+	@DeleteMapping("/borrarLista")
+	public void borrarLista(@RequestBody Map<String, String> request) {
+	    String idLista = request.get("idLista").trim();
+	    String token = request.get("token");
+
+	    if (idLista.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista esta vacia");
+	    }
+	    
+	    this.listaService.borrarLista(idLista, token);
 	}
 	
 }
