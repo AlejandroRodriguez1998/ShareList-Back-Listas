@@ -6,6 +6,9 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -23,10 +26,12 @@ public class Lista {
 	@JsonIgnore
 	private String propietario;
 
-	@OneToMany(mappedBy = "lista")
+	@OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Producto> productos;
 	
 	@ElementCollection
+	@CollectionTable(name = "lista_emails_usuarios", joinColumns = @JoinColumn(name = "lista_id"))
+	@Column(name = "email_usuarios")
 	private List<String> emailsUsuarios;
 	
 	public Lista() {
