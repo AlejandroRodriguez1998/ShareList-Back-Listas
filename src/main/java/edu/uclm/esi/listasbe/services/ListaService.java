@@ -42,7 +42,7 @@ public class ListaService {
 		if (!resultado.get("isPremium")) {
 		    List<Lista> cantidadListas = this.listaDao.findByPropietario(email);
 
-		    if (cantidadListas.size() == 2) {
+		    if (cantidadListas.size() >= 2) {
 		        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 2 listas");
 		    }
 		}
@@ -56,14 +56,24 @@ public class ListaService {
 		return lista;
 	}
 	
-	public Lista addProducto(String idLista, Producto producto) {
+	public Lista addProducto(String idLista, Producto producto, String token) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
 		Optional<Lista> optLista = this.listaDao.findById(idLista);
+
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		}
 		
 		if(optLista.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra la lista");
 		}
 		
 		Lista lista = optLista.get();
+		
+		if (!resultado.get("isPremium") && lista.getProductos().size() >= 10) {
+		    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 10 productos");
+		}
+		
 		lista.add(producto);
 		
 		producto.setLista(lista);
