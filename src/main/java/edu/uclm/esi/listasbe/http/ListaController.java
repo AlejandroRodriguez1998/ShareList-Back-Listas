@@ -1,11 +1,8 @@
 package edu.uclm.esi.listasbe.http;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.services.ListaService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("lista") //Nombre publico de donde vamos a hacer las peticiones
@@ -43,11 +40,11 @@ public class ListaController {
 	    String email = result.get("email");
 	    
 	    if (nombre.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre no puede estar vacío");
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre no puede estar vacío.");
 	    }
 
 	    if (nombre.length() > 80) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista está limitado a 80 caracteres");
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista esta limitado a 80 caracteres.");
 	    }
 
 	    return this.listaService.crearLista(nombre, token, email);
@@ -57,11 +54,11 @@ public class ListaController {
 	public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) {
 				
 		if(producto.getNombre().isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio.");
 		}
 		
 		if(producto.getNombre().length() > 80) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista esta limitado a 80 caracteres");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto esta limitado a 80 caracteres.");
 		}
 		
 		String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
@@ -77,12 +74,12 @@ public class ListaController {
 	    Float udsCompradas = ((Number) compra.get("udsCompradas")).floatValue();
 		String idProducto = compra.get("idProducto").toString();
 	
-		if (idProducto.trim().isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto esta vacio");
+		if (idProducto.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio.");
 		}
 		
 		if (udsCompradas == null || udsCompradas <= 0) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de unidades compradas es inválida");
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de unidades compradas es inválida.");
 	    }
 		
 		return this.listaService.comprar(idProducto,udsCompradas, token);
@@ -93,7 +90,7 @@ public class ListaController {
 	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
 
 	    if (lista == null) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista está vacía");
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista está vacía.");
 	    }
 	    
 	    return listaService.actualizarLista(lista, token);
@@ -103,13 +100,23 @@ public class ListaController {
 	public void borrarLista(HttpServletRequest request, @RequestBody String idLista) {
 	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
 	    
-	    if (idLista.trim().isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista está vacía");
+	    if (idLista.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista seleccionada está vacía.");
 	    }
 
 	    this.listaService.borrarLista(idLista, token);
 	}
 	
+	@DeleteMapping("/borrarProducto")
+	public void borrarProducto(HttpServletRequest request, @RequestBody String idProducto) {
+	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
+	    
+	    if (idProducto.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto seleccionado está vacío.");
+	    }
+
+	    this.listaService.borrarProducto(idProducto, token);
+	}
 }
 
 

@@ -29,15 +29,19 @@ public class Lista {
 	@OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Producto> productos;
 	
+	@OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Invitacion> invitaciones;
+	
 	@ElementCollection
 	@CollectionTable(name = "lista_emails_usuarios", joinColumns = @JoinColumn(name = "lista_id"))
-	@Column(name = "email_usuarios")
+	@Column(name = "emails_usuarios")
 	private List<String> emailsUsuarios;
 	
 	public Lista() {
 		this.id = UUID.randomUUID().toString();
 		this.productos = new ArrayList<>();
 		this.emailsUsuarios = new ArrayList<>();
+		this.invitaciones = new ArrayList<>();
 	}
 
 	public String getId() {
@@ -76,6 +80,14 @@ public class Lista {
 		this.productos = productos;
 	}
 	
+	public List<Invitacion> getInvitaciones() {
+		return invitaciones;
+	}
+	
+	public void setInvitaciones(List<Invitacion> invitaciones) {
+		this.invitaciones = invitaciones;
+	}
+	
 	public List<String> getEmailsUsuarios() {
 		return emailsUsuarios;
 	}
@@ -83,4 +95,11 @@ public class Lista {
 	public void setEmailsUsuarios(List<String> emailsUsuarios) {
 		this.emailsUsuarios = emailsUsuarios;
 	}
+	
+	public void addUsuario(String emailUsuario) {
+	    if (!this.emailsUsuarios.contains(emailUsuario)) {
+	        this.emailsUsuarios.add(emailUsuario);
+	    }
+	}
+	
 }

@@ -1,6 +1,5 @@
 package edu.uclm.esi.listasbe.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,14 +39,14 @@ public class ListaService {
 		Map<String, Boolean> resultado = this.proxy.validar(token);
 
 		if (!resultado.get("isValid")) {
-		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para crear listas.");
 		}
 		
 		if (!resultado.get("isPremium")) {
 		    List<Lista> cantidadListas = this.listaDao.findByPropietario(email);
 
 		    if (cantidadListas.size() >= 2) {
-		        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 2 listas");
+		        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 2 listas.");
 		    }
 		}
 		
@@ -65,17 +64,17 @@ public class ListaService {
 		Optional<Lista> optLista = this.listaDao.findById(idLista);
 
 		if (!resultado.get("isValid")) {
-		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para añadir un producto.");
 		}
 		
 		if(optLista.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra la lista");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra la lista.");
 		}
 		
 		Lista lista = optLista.get();
 		
 		if (!resultado.get("isPremium") && lista.getProductos().size() >= 10) {
-		    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 10 productos");
+		    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 10 productos.");
 		}
 		
 		producto.setLista(lista);
@@ -92,13 +91,13 @@ public class ListaService {
 		Map<String, Boolean> resultado = this.proxy.validar(token);
 
 		if (!resultado.get("isValid")) {
-		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para comprar.");
 		}
 		
 		Optional<Producto> optProducto = this.productoDao.findById(idProducto);
 		
 		if(optProducto.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra el producto");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra el producto.");
 		}
 		
 		Producto producto = optProducto.get();
@@ -114,13 +113,13 @@ public class ListaService {
 		Map<String, Boolean> resultado = this.proxy.validar(token);
 
 		if (!resultado.get("isValid")) {
-		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para actualizar un producto.");
 		}
 		
 		Optional<Lista> optListaExistente = this.listaDao.findById(lista.getId());
 
 	    if (optListaExistente.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La lista no existe");
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La lista no existe.");
 	    }
 
 	    Lista listaExistente = optListaExistente.get();
@@ -139,10 +138,20 @@ public class ListaService {
 		Map<String, Boolean> resultado = this.proxy.validar(token);
 
 		if (!resultado.get("isValid")) {
-		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para borrar una lista.");
 		}
 		
 	    this.listaDao.deleteById(idLista);
+	}
+	
+	public void borrarProducto(String idProducto, String token) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
+
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para borrar un producto.");
+		}
+		
+	    this.productoDao.deleteById(idProducto);
 	}
 	
 }

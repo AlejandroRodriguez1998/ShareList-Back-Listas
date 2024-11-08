@@ -1,21 +1,20 @@
 package edu.uclm.esi.listasbe.ws;
 import java.io.IOException;
-
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import edu.uclm.esi.listasbe.dao.ListaDao;
-import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 
 @Component
@@ -35,7 +34,7 @@ public class WsListas extends TextWebSocketHandler {
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception { //Este metodo es cuando invocas la conexion 
 		String email = this.getParameter(session,"email");
 		
-		List<String> listas = this.listaDao.getListasDe(email);
+		List<String> listas = WsListas.listaDao.getListasDe(email);
 		
 		for (String idLista : listas) {
 			List<WebSocketSession> auxiliar = this.sessionsByIdLista.get(idLista);
@@ -95,11 +94,11 @@ public class WsListas extends TextWebSocketHandler {
 		
 		return null;
 	}
-	
+	/*
 	private void difundir(JSONObject jso) throws IOException  {
 		TextMessage message = new TextMessage(jso.toString());
 		
-		/*for (WebSocketSession target: this.sessions.values()) {
+		for (WebSocketSession target: this.sessions.values()) {
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -110,9 +109,9 @@ public class WsListas extends TextWebSocketHandler {
 					}
 				}
 			}).start();
-		}*/
 		
-	}
+		
+	}*/
 	
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
