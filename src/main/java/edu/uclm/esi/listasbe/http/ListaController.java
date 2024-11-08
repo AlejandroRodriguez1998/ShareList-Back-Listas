@@ -31,10 +31,15 @@ public class ListaController {
 	@Autowired //instanciar este objeto sin llamar al constructor
 	private ListaService listaService;
 	
+	@GetMapping("/obtenerListas")
+	public List<Lista> obtenerListas(@RequestParam String email) {
+		return this.listaService.obtenerListas(email);
+	}
+	
 	@PostMapping("/crearLista")
 	public Lista crearLista(HttpServletRequest request, @RequestBody Map<String, String> result) {
 		String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
-		String nombre = result.get("nombre").trim();
+		String nombre = result.get("nombre");
 	    String email = result.get("email");
 	    
 	    if (nombre.isEmpty()) {
@@ -67,16 +72,31 @@ public class ListaController {
 	}
 	
 	@PutMapping("/comprar")
-	public Producto comprar(@RequestBody Map<String, Object> compra) {
+	public Producto comprar(HttpServletRequest request, @RequestBody Map<String, Object> compra) {
+	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
+	    Float udsCompradas = ((Number) compra.get("udsCompradas")).floatValue();
 		String idProducto = compra.get("idProducto").toString();
-		float udsCompradas = (float) compra.get("udsCompradas");
+	
+		if (idProducto.trim().isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto esta vacio");
+		}
 		
-		return this.listaService.comprar(idProducto,udsCompradas);
+		if (udsCompradas == null || udsCompradas <= 0) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de unidades compradas es inválida");
+	    }
+		
+		return this.listaService.comprar(idProducto,udsCompradas, token);
 	}
 	
-	@GetMapping("/obtenerListas")
-	public List<Lista> obtenerListas(@RequestParam String email) {
-		return this.listaService.obtenerListas(email);
+	@PutMapping("/actualizarLista")
+	public Lista actualizarLista(HttpServletRequest request, @RequestBody Lista lista) {
+	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
+
+	    if (lista == null) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista está vacía");
+	    }
+	    
+	    return listaService.actualizarLista(lista, token);
 	}
 	
 	@DeleteMapping("/borrarLista")

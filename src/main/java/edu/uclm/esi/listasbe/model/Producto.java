@@ -76,7 +76,8 @@ public class Producto {
 	}
 	
 	public void comprar(float udsCompradas) {
-		this.udsPedidas = this.udsPedidas + udsCompradas;
+		this.udsCompradas = udsCompradas;
+		this.udsPedidas = this.udsPedidas - udsCompradas;
 	}
 	
 }

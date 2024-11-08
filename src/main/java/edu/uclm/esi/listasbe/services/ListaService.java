@@ -32,6 +32,10 @@ public class ListaService {
 	@Autowired
 	private WsListas wsListas;
 	
+	public List<Lista> obtenerListas(String email) {
+	    return this.listaDao.findByPropietario(email);
+	}
+	
 	public Lista crearLista(String nombre, String token, String email) {
 		Map<String, Boolean> resultado = this.proxy.validar(token);
 
@@ -74,17 +78,23 @@ public class ListaService {
 		    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 10 productos");
 		}
 		
-		lista.add(producto);
-		
 		producto.setLista(lista);
 		this.productoDao.save(producto);
+		
+		lista.add(producto);
 		
 		this.wsListas.notificar(idLista, producto);
 		
 		return lista;
 	}
 	
-	public Producto comprar(String idProducto, float udsCompradas) {
+	public Producto comprar(String idProducto, Float udsCompradas, String token) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
+
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		}
+		
 		Optional<Producto> optProducto = this.productoDao.findById(idProducto);
 		
 		if(optProducto.isEmpty()) {
@@ -99,9 +109,30 @@ public class ListaService {
 		return producto;
 		
 	}
+	
+	public Lista actualizarLista(Lista lista, String token) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
 
-	public List<Lista> obtenerListas(String email) {
-	    return this.listaDao.findByPropietario(email);
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido");
+		}
+		
+		Optional<Lista> optListaExistente = this.listaDao.findById(lista.getId());
+
+	    if (optListaExistente.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La lista no existe");
+	    }
+
+	    Lista listaExistente = optListaExistente.get();
+	    
+	    listaExistente.getProductos().clear();
+
+	    for (Producto producto : lista.getProductos()) {
+	        producto.setLista(listaExistente); 	        
+	        listaExistente.getProductos().add(producto);
+	    }
+
+	    return this.listaDao.save(listaExistente);
 	}
 
 	public void borrarLista(String idLista, String token) {
