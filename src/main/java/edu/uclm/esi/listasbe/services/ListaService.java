@@ -1,6 +1,8 @@
 package edu.uclm.esi.listasbe.services;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import edu.uclm.esi.listasbe.ws.WsListas;
@@ -78,8 +80,16 @@ public class ListaService {
 		
 	}
 
-	public Iterable<Lista> obtenerListas() {
-		return this.listaDao.findAll();
+	public List<Lista> obtenerListas(String email) {
+		List<Lista> result = new ArrayList<>();
+		List<String> ids =  this.listaDao.getListasDe(email);
+
+		for (String id : ids) {
+			result.add(this.listaDao.findById(id).get()); // Se puede poner get porque sabemos que esos ids existen
+		}
+
+		return result;
+
 		
 	}
 	

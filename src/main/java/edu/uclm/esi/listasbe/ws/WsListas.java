@@ -24,8 +24,12 @@ public class WsListas extends TextWebSocketHandler {
 
 	private Map<String, List<WebSocketSession>> sessionsByIdLista = new ConcurrentHashMap<>();
 
-	@Autowired
-	private ListaDao listaDao;
+	private static ListaDao listaDao;
+
+	@Autowired //Esto lo ejecuta solo Spring cuando arranca
+	public void setListaDao(ListaDao listaDao) {
+		WsListas.listaDao = listaDao;
+	}
 
 
 
