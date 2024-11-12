@@ -96,7 +96,7 @@ public class Lista {
 		this.emailsUsuarios = emailsUsuarios;
 	}
 	
-	public void addUsuario(String emailUsuario) {
+	public void addEmailUsuario(String emailUsuario) {
 	    if (!this.emailsUsuarios.contains(emailUsuario)) {
 	        this.emailsUsuarios.add(emailUsuario);
 	    }

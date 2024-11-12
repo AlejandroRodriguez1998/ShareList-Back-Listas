@@ -53,6 +53,7 @@ public class ListaService {
 		Lista lista = new Lista();
 		lista.setNombre(nombre);
 		lista.setPropietario(email);
+		lista.addEmailUsuario(email);
 		
 		this.listaDao.save(lista);
 		

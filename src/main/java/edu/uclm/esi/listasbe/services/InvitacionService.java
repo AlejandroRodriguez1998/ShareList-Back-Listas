@@ -22,6 +22,8 @@ public class InvitacionService {
 
     @Autowired
     private InvitacionDao invitacionDao;
+    
+    private String baseUrl = "https://localhost:4200";
 
     public String crearInvitacion(String listaId) {
         Optional<Lista> listaOpt = listaDao.findById(listaId);
@@ -38,7 +40,9 @@ public class InvitacionService {
         invitacion.setFechaExpiracion(LocalDateTime.now().plusDays(7));
         invitacionDao.save(invitacion);
 
-        return token;
+        String urlInvitacion = baseUrl + "/Invitacion?token=" + token;
+        
+        return urlInvitacion;
     }
     
     public void aceptarInvitacion(String token, String emailUsuario) {
@@ -53,9 +57,20 @@ public class InvitacionService {
         if (invitacion.isUsada()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La invitación ya ha sido usada.");
         }
-
+        
+       
         Lista lista = invitacion.getLista();
-        lista.addUsuario(emailUsuario); 
+ 
+        
+        if(lista.getPropietario().equalsIgnoreCase(emailUsuario)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede aceptar tu propia invitación.");
+        }
+        
+        if (lista.getEmailsUsuarios().contains(emailUsuario)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ya tienes acceso a esta lista.");
+        }
+        
+        lista.addEmailUsuario(emailUsuario); 
         listaDao.save(lista);
 
         invitacion.setUsada(true);
