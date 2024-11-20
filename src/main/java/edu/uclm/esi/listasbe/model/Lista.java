@@ -23,7 +23,6 @@ public class Lista {
 	@Column(length = 80)
 	private String nombre;
 	
-	@JsonIgnore
 	private String propietario;
 
 	@OneToMany(mappedBy = "lista", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -69,7 +68,7 @@ public class Lista {
 	}
 	
 	public void add(Producto producto) {
-		this.productos.add(producto);
+		this.productos.add(0, producto);
 	}
 	
 	public List<Producto> getProductos() {

@@ -14,6 +14,7 @@ import edu.uclm.esi.listasbe.dao.ProductoDao;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.ws.WsListas;
+import jakarta.annotation.PostConstruct;
 
 
 @Service //anotaciones para que se identifique que es cada cosa
@@ -32,7 +33,7 @@ public class ListaService {
 	private WsListas wsListas;
 	
 	public List<Lista> obtenerListas(String email) {
-	    return this.listaDao.findByPropietario(email);
+	    return this.listaDao.findListasByEmailUsuario(email);
 	}
 	
 	public Lista crearLista(String nombre, String token, String email) {
@@ -83,7 +84,7 @@ public class ListaService {
 		
 		lista.add(producto);
 		
-		this.wsListas.notificar(idLista, producto);
+		this.wsListas.notificar(idLista, producto, "nuevoProducto");
 		
 		return lista;
 	}
@@ -105,6 +106,10 @@ public class ListaService {
 		producto.comprar(udsCompradas);
 		
 		this.productoDao.save(producto);
+		
+		System.out.println("Notificando compra de producto " + producto.getId() + " en lista " + producto.getLista().getId());
+		
+		this.wsListas.notificar(producto.getLista().getId(), producto, "actualizacionProducto");
 		
 		return producto;
 		
@@ -143,6 +148,8 @@ public class ListaService {
 		}
 		
 	    this.listaDao.deleteById(idLista);
+	    
+	    this.wsListas.notificar(idLista, null, "borradoLista");
 	}
 	
 	public void borrarProducto(String idProducto, String token) {
@@ -152,7 +159,11 @@ public class ListaService {
 		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para borrar un producto.");
 		}
 		
+		Producto producto = this.productoDao.findById(idProducto).get();
+		
 	    this.productoDao.deleteById(idProducto);
+	    
+	    this.wsListas.notificar(producto.getLista().getId(), producto, "borradoProducto");
 	}
 	
 }

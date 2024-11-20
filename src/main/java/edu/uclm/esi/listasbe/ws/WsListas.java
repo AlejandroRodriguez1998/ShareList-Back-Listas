@@ -16,6 +16,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.model.Producto;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class WsListas extends TextWebSocketHandler {
@@ -23,7 +24,12 @@ public class WsListas extends TextWebSocketHandler {
 	@Autowired
 	private static ListaDao listaDao;
 	
-	private Map<String, List<WebSocketSession>> sessionsByIdLista = new ConcurrentHashMap<>();
+	private final SessionStorage sessionStorage;
+
+    @Autowired
+    public WsListas(SessionStorage sessionStorage) {
+        this.sessionStorage = sessionStorage;
+    }
 	
 	@Autowired
 	public void setListaDao(ListaDao listaDao) {
@@ -31,54 +37,53 @@ public class WsListas extends TextWebSocketHandler {
 	}
 	
 	@Override
-	public void afterConnectionEstablished(WebSocketSession session) throws Exception { //Este metodo es cuando invocas la conexion 
-		String email = this.getParameter(session,"email");
-		
-		List<String> listas = WsListas.listaDao.getListasDe(email);
-		
-		for (String idLista : listas) {
-			List<WebSocketSession> auxiliar = this.sessionsByIdLista.get(idLista);
-			
-			if (auxiliar == null) {
-				auxiliar = new ArrayList<>();
-				auxiliar.add(session);
-			}else {
-				auxiliar.add(session);
-			}
-			
-			this.sessionsByIdLista.put(idLista, auxiliar);
-		}
-	}
-	
-	public void notificar(String idLista, Producto producto) {
-		List<WebSocketSession> interesados = this.sessionsByIdLista.get(idLista);
-		
-		if (interesados != null) {
-		
-			JSONObject jso = new JSONObject();
-			jso.put("tipo","actualizacion");
-			jso.put("idLista", idLista);
-			jso.put("unidadesCompradas", producto.getUdsCompradas());
-			jso.put("unidadesPedidas", producto.getUdsPedidas());
-			jso.put("nombreProducto", producto.getNombre());
-			
-			TextMessage message = new TextMessage(jso.toString());
-			
-			for (WebSocketSession target: interesados) {
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							target.sendMessage(message); // Envia un mensaje al cliente mediante la session.
-						} catch (IOException e) {
-							//WsListas.this.sessions.remove(target.getId());
-						}
-					}
-				}).start();
-			}
-		}
-		
-	}
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        String email = this.getParameter(session, "email");
+
+        List<String> listas = WsListas.listaDao.getListasDe(email);
+
+        synchronized (this.sessionStorage.getSessionsByIdLista()) {
+            for (String idLista : listas) {
+                this.sessionStorage.getSessionsByIdLista()
+                    .computeIfAbsent(idLista, k -> new ArrayList<>())
+                    .add(session);
+            }
+        }
+    }
+
+    public void notificar(String idLista, Producto producto, String tipo) {
+        synchronized (this.sessionStorage.getSessionsByIdLista()) {
+            List<WebSocketSession> interesados = this.sessionStorage.getSessionsByIdLista().get(idLista);
+            
+            if (interesados != null) {
+            	JSONObject jso = new JSONObject();
+        		jso.put("tipo", tipo);
+        		jso.put("idLista", idLista);
+        		
+            	if (tipo != "borradoLista") {
+            		jso.put("idProducto", producto.getId());
+        			jso.put("nombre", producto.getNombre());
+        			jso.put("udsPedidas", producto.getUdsPedidas());
+        			jso.put("udsCompradas", producto.getUdsCompradas());
+            	} 
+            
+    			TextMessage message = new TextMessage(jso.toString());
+    			
+    			for (WebSocketSession target: interesados) {
+    				new Thread(new Runnable() {
+    					@Override
+    					public void run() {
+    						try {
+    							target.sendMessage(message);
+    						} catch (IOException e) {
+    							//WsListas.this.sessions.remove(target.getId());
+    						}
+    					}
+    				}).start();
+    			}
+            }
+        }
+    }
 	
 	private String getParameter(WebSocketSession session, String parameter) {
 		URI uri = session.getUri();
@@ -94,28 +99,9 @@ public class WsListas extends TextWebSocketHandler {
 		
 		return null;
 	}
-	/*
-	private void difundir(JSONObject jso) throws IOException  {
-		TextMessage message = new TextMessage(jso.toString());
-		
-		for (WebSocketSession target: this.sessions.values()) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						target.sendMessage(message); // Envia un mensaje al cliente mediante la session.
-					} catch (IOException e) {
-						WsListas.this.sessions.remove(target.getId());
-					}
-				}
-			}).start();
-		
-		
-	}*/
-	
+
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-		//this.sessions.remove(session.getId());
 	}
 	
 	@Override
