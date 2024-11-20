@@ -106,38 +106,36 @@ public class ListaService {
 		producto.comprar(udsCompradas);
 		
 		this.productoDao.save(producto);
-		
-		System.out.println("Notificando compra de producto " + producto.getId() + " en lista " + producto.getLista().getId());
-		
+				
 		this.wsListas.notificar(producto.getLista().getId(), producto, "actualizacionProducto");
 		
 		return producto;
 		
 	}
 	
-	public Lista actualizarLista(Lista lista, String token) {
+	public Producto actualizarProducto(Producto producto, String token) {
 		Map<String, Boolean> resultado = this.proxy.validar(token);
 
 		if (!resultado.get("isValid")) {
 		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para actualizar un producto.");
 		}
 		
-		Optional<Lista> optListaExistente = this.listaDao.findById(lista.getId());
+		Optional<Producto> optProductoExistente = this.productoDao.findById(producto.getId());
 
-	    if (optListaExistente.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La lista no existe.");
+	    if (optProductoExistente.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra el producto.");
 	    }
 
-	    Lista listaExistente = optListaExistente.get();
+	    Producto productoExistente = optProductoExistente.get();
+
+	    productoExistente.setNombre(producto.getNombre());
+	    productoExistente.setUdsPedidas(producto.getUdsPedidas());
 	    
-	    listaExistente.getProductos().clear();
+	    this.productoDao.save(productoExistente);
+	    
+	    this.wsListas.notificar(productoExistente.getLista().getId(), productoExistente, "actualizacionProducto");
 
-	    for (Producto producto : lista.getProductos()) {
-	        producto.setLista(listaExistente); 	        
-	        listaExistente.getProductos().add(producto);
-	    }
-
-	    return this.listaDao.save(listaExistente);
+	    return productoExistente;
 	}
 
 	public void borrarLista(String idLista, String token) {

@@ -85,15 +85,15 @@ public class ListaController {
 		return this.listaService.comprar(idProducto,udsCompradas, token);
 	}
 	
-	@PutMapping("/actualizarLista")
-	public Lista actualizarLista(HttpServletRequest request, @RequestBody Lista lista) {
+	@PutMapping("/actualizarProducto")
+	public Producto actualizarProducto(HttpServletRequest request, @RequestBody Producto producto) {
 	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
 
-	    if (lista == null) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista está vacía.");
+	    if (producto == null) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto está vacío.");
 	    }
 	    
-	    return listaService.actualizarLista(lista, token);
+	    return this.listaService.actualizarProducto(producto, token);
 	}
 	
 	@DeleteMapping("/borrarLista")

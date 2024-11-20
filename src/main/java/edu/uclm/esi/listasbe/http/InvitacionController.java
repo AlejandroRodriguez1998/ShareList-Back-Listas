@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.uclm.esi.listasbe.services.InvitacionService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("invitaciones")
@@ -20,11 +21,10 @@ public class InvitacionController {
     private InvitacionService invitacionService;
 
 	@PostMapping("/generarInvitacion")
-    public String crearInvitacion(@RequestBody String listaId) {
+    public String crearInvitacion(HttpServletRequest request, @RequestBody String listaId) {
+		String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
 		
-		String token = invitacionService.crearInvitacion(listaId);
-                
-		return token;
+		return invitacionService.crearInvitacion(listaId,token);
     }
 	
 	

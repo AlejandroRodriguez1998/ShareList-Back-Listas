@@ -1,6 +1,8 @@
 package edu.uclm.esi.listasbe.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,19 +25,36 @@ public class InvitacionService {
     @Autowired
     private InvitacionDao invitacionDao;
     
+    @Autowired
+	private ProxyDEU proxy;
+    
     private String baseUrl = "https://localhost:4200";
 
-    public String crearInvitacion(String listaId) {
+    public String crearInvitacion(String listaId, String token) {
+		Map<String, Boolean> resultado = this.proxy.validar(token);
+
+		if (!resultado.get("isValid")) {
+		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para crear listas.");
+		}
+		
+		if (!resultado.get("isPremium")) {
+		    List<Invitacion> cantidadInvitaciones = this.invitacionDao.findByListaIdAndUsadaTrue(listaId);
+
+		    if (cantidadInvitaciones.size() >= 1) {
+		        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 1 amigo invitado.");
+		    }
+		}
+		
         Optional<Lista> listaOpt = listaDao.findById(listaId);
         
         if (listaOpt.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra la lista.");
         }
 
-        String token = UUID.randomUUID().toString();
+        String tokenInvitacion = UUID.randomUUID().toString();
         
         Invitacion invitacion = new Invitacion();
-        invitacion.setToken(token);
+        invitacion.setToken(tokenInvitacion);
         invitacion.setLista(listaOpt.get());
         invitacion.setFechaExpiracion(LocalDateTime.now().plusDays(7));
         invitacionDao.save(invitacion);
