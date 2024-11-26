@@ -25,30 +25,34 @@ public class InvitacionService {
     @Autowired
     private InvitacionDao invitacionDao;
     
-    @Autowired
-	private ProxyDEU proxy;
+    //@Autowired
+	//private ProxyDEU proxy;
     
     private String baseUrl = "https://localhost:4200";
+    
+    private final int DIAS_EXPIRACION = 7;
 
-    public String crearInvitacion(String listaId, String token) {
-		Map<String, Boolean> resultado = this.proxy.validar(token);
-
-		if (!resultado.get("isValid")) {
-		    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para crear listas.");
-		}
-		
-		if (!resultado.get("isPremium")) {
-		    List<Invitacion> cantidadInvitaciones = this.invitacionDao.findByListaIdAndUsadaTrue(listaId);
-
-		    if (cantidadInvitaciones.size() >= 1) {
-		        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 1 amigo invitado.");
-		    }
-		}
-		
-        Optional<Lista> listaOpt = listaDao.findById(listaId);
-        
+    public String crearInvitacion(String listaId, String email, Boolean isPremium) {
+		//Map<String, Boolean> resultado = this.proxy.validar(token);
+    	Optional<Lista> listaOpt = listaDao.findById(listaId);
+    	
         if (listaOpt.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encuentra la lista.");
+        }
+        
+        Lista lista = listaOpt.get();
+        
+        // Solo el propietario de la lista puede generar invitaciones
+        if (!lista.getPropietario().equalsIgnoreCase(email)) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para generar invitaciones.");
+        }
+        
+        if (!isPremium) {
+            List<Invitacion> cantidadInvitaciones = this.invitacionDao.findByListaIdAndUsadaTrue(listaId);
+
+            if (cantidadInvitaciones.size() >= 1) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Los usuarios no premium solo pueden tener hasta 1 amigo invitado.");
+            }
         }
 
         String tokenInvitacion = UUID.randomUUID().toString();
@@ -56,18 +60,17 @@ public class InvitacionService {
         Invitacion invitacion = new Invitacion();
         invitacion.setToken(tokenInvitacion);
         invitacion.setLista(listaOpt.get());
-        invitacion.setFechaExpiracion(LocalDateTime.now().plusDays(7));
+        invitacion.setFechaExpiracion(LocalDateTime.now().plusDays(DIAS_EXPIRACION));
         invitacionDao.save(invitacion);
 
-        String urlInvitacion = baseUrl + "/Invitacion?token=" + token;
+        String urlInvitacion = baseUrl + "/Invitacion?token=" + tokenInvitacion;
         
         return urlInvitacion;
     }
     
     public void aceptarInvitacion(String token, String emailUsuario) {
         Invitacion invitacion = invitacionDao.findByToken(token)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invitacion no valida."));
-
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invitación no válida."));
 
         if (invitacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.GONE, "La invitación ha expirado.");
@@ -76,20 +79,18 @@ public class InvitacionService {
         if (invitacion.isUsada()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La invitación ya ha sido usada.");
         }
-        
-       
+
         Lista lista = invitacion.getLista();
- 
-        
-        if(lista.getPropietario().equalsIgnoreCase(emailUsuario)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puede aceptar tu propia invitación.");
+
+        if (lista.getPropietario().equalsIgnoreCase(emailUsuario)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes aceptar tu propia invitación.");
         }
-        
+
         if (lista.getEmailsUsuarios().contains(emailUsuario)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ya tienes acceso a esta lista.");
         }
-        
-        lista.addEmailUsuario(emailUsuario); 
+
+        lista.addEmailUsuario(emailUsuario);
         listaDao.save(lista);
 
         invitacion.setUsada(true);

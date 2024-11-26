@@ -3,17 +3,20 @@ package edu.uclm.esi.listasbe.services;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProxyDEU {
 	
+	/*
 	public Map<String, Boolean> validar(String token) {
 	    String url = "http://localhost:8080/tokens/validar";
 	    Map<String, Boolean> resultado = new HashMap<>();
@@ -39,5 +42,35 @@ public class ProxyDEU {
 	    }
 	    
 	    return resultado;
-	}
+	}*/
+
+    public Map<String, Object> validarTokenYObtenerInfo(String token) {
+        String url = "http://localhost:8080/tokens/validarTokenYObtenerInfo";
+        Map<String, Object> resultado = new HashMap<>();
+        resultado.put("isValid", false);
+        resultado.put("isPremium", false);
+        resultado.put("email", null);
+        
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(url);
+
+            // Añadir el token en la cabecera Authorization
+            httpGet.setHeader("Authorization", "Bearer " + token);
+
+            try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                if (response.getCode() == 200) {
+                    String responseBody = EntityUtils.toString(response.getEntity());
+                    JSONObject jsonResponse = new JSONObject(responseBody);
+
+                    resultado.put("isValid", true);
+                    resultado.put("isPremium", jsonResponse.getBoolean("isPremium"));
+                    resultado.put("email", jsonResponse.getString("email"));
+                }           
+            }
+        } catch (Exception e) {
+            System.err.println("Error al validar el token: " + e.getMessage());
+        }
+        
+        return resultado;
+    }
 }

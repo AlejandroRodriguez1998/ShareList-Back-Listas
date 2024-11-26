@@ -23,100 +23,129 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("lista") //Nombre publico de donde vamos a hacer las peticiones
-@CrossOrigin("*") //Sirve para que el servidor o controlador que permita perticiones de cualquier lado
+@CrossOrigin(origins = { "https://localhost:4200" }, allowCredentials = "true")
+
 public class ListaController {
 	@Autowired //instanciar este objeto sin llamar al constructor
 	private ListaService listaService;
 	
-	@GetMapping("/obtenerListas")
-	public List<Lista> obtenerListas(@RequestParam String email) {
-		return this.listaService.obtenerListas(email);
-	}
+    @GetMapping("/obtenerListas")
+    public List<Lista> obtenerListas(HttpServletRequest request) {
+        String email = (String) request.getAttribute("userEmail");
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado.");
+        }
+        return this.listaService.obtenerListas(email);
+    }
 	
-	@PostMapping("/crearLista")
-	public Lista crearLista(HttpServletRequest request, @RequestBody Map<String, String> result) {
-		String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
-		String nombre = result.get("nombre");
-	    String email = result.get("email");
-	    
-	    if (nombre.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre no puede estar vacío.");
-	    }
 
-	    if (nombre.length() > 80) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la lista esta limitado a 80 caracteres.");
-	    }
+    @PostMapping("/crearLista")
+    public Lista crearLista(HttpServletRequest request, @RequestBody Map<String, String> result) {
+        String email = (String) request.getAttribute("userEmail");
+        Boolean isPremium = (Boolean) request.getAttribute("isPremium");
 
-	    return this.listaService.crearLista(nombre, token, email);
-	}
-	
-	@PostMapping("/addProducto")
-	public Lista addProducto(HttpServletRequest request, @RequestBody Producto producto) {
-				
-		if(producto.getNombre().isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio.");
-		}
-		
-		if(producto.getNombre().length() > 80) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto esta limitado a 80 caracteres.");
-		}
-		
-		String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
-		String idLista = request.getHeader("idLista");
-		
-		return this.listaService.addProducto(idLista,producto,token);
-		
-	}
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para crear listas.");
+        }
+        String nombre = result.get("nombre");
+
+        return this.listaService.crearLista(nombre, email, isPremium);
+    }
 	
 	@PutMapping("/comprar")
-	public Producto comprar(HttpServletRequest request, @RequestBody Map<String, Object> compra) {
-	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
-	    Float udsCompradas = ((Number) compra.get("udsCompradas")).floatValue();
-		String idProducto = compra.get("idProducto").toString();
-	
-		if (idProducto.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacio.");
-		}
-		
-		if (udsCompradas == null || udsCompradas <= 0) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de unidades compradas es inválida.");
-	    }
-		
-		return this.listaService.comprar(idProducto,udsCompradas, token);
-	}
-	
-	@PutMapping("/actualizarProducto")
-	public Producto actualizarProducto(HttpServletRequest request, @RequestBody Producto producto) {
-	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
+    public Producto comprar(HttpServletRequest request, @RequestBody Map<String, Object> compra) {
+        String email = (String) request.getAttribute("userEmail");
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para comprar.");
+        }
 
-	    if (producto == null) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto está vacío.");
-	    }
-	    
-	    return this.listaService.actualizarProducto(producto, token);
-	}
-	
-	@DeleteMapping("/borrarLista")
-	public void borrarLista(HttpServletRequest request, @RequestBody String idLista) {
-	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
-	    
-	    if (idLista.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista seleccionada está vacía.");
-	    }
+        Float udsCompradas = ((Number) compra.get("udsCompradas")).floatValue();
+        String idProducto = (String) compra.get("idProducto");
 
-	    this.listaService.borrarLista(idLista, token);
-	}
-	
-	@DeleteMapping("/borrarProducto")
-	public void borrarProducto(HttpServletRequest request, @RequestBody String idProducto) {
-	    String token = request.getHeader("Authorization").replace("Bearer ", "").trim();
-	    
-	    if (idProducto.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto seleccionado está vacío.");
-	    }
+        if (idProducto == null || idProducto.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacío.");
+        }
 
-	    this.listaService.borrarProducto(idProducto, token);
-	}
+        if (udsCompradas == null || udsCompradas <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de unidades compradas es inválida.");
+        }
+
+        return this.listaService.comprar(idProducto, udsCompradas, email);
+    }
+	
+    @PostMapping("/addProducto")
+    public Lista addProducto(HttpServletRequest request, @RequestBody Map<String, Object> body) {
+        String email = (String) request.getAttribute("userEmail");
+        Boolean isPremium = (Boolean) request.getAttribute("isPremium");
+
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para añadir un producto.");
+        }
+
+        String idLista = (String) body.get("idLista");
+        Map<String, Object> productoMap = (Map<String, Object>) body.get("producto");
+
+        if (idLista == null || idLista.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista no puede estar vacía.");
+        }
+
+        Producto producto = new Producto();
+        producto.setNombre((String) productoMap.get("nombre"));
+        producto.setUdsPedidas(((Number) productoMap.get("udsPedidas")).floatValue());
+
+        if (producto.getNombre().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacío.");
+        }
+
+        if (producto.getNombre().length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre del producto está limitado a 80 caracteres.");
+        }
+
+        return this.listaService.addProducto(idLista, producto, email, isPremium);
+    }
+
+	
+    @PutMapping("/actualizarProducto")
+    public Producto actualizarProducto(HttpServletRequest request, @RequestBody Producto producto) {
+        String email = (String) request.getAttribute("userEmail");
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para actualizar un producto.");
+        }
+
+        if (producto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto está vacío.");
+        }
+
+        return this.listaService.actualizarProducto(producto, email);
+    }
+	
+    @DeleteMapping("/borrarLista")
+    public void borrarLista(HttpServletRequest request, @RequestBody String idLista) {
+        String email = (String) request.getAttribute("userEmail");
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para borrar una lista.");
+        }
+
+        if (idLista.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La lista seleccionada está vacía.");
+        }
+
+        this.listaService.borrarLista(idLista, email);
+    }
+	
+    @DeleteMapping("/borrarProducto")
+    public void borrarProducto(HttpServletRequest request, @RequestBody String idProducto) {
+        String email = (String) request.getAttribute("userEmail");
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para borrar un producto.");
+        }
+
+        if (idProducto.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto seleccionado está vacío.");
+        }
+
+        this.listaService.borrarProducto(idProducto, email);
+    }
 }
 
 
