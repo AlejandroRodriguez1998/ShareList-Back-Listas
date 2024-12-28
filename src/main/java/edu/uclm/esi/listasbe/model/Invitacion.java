@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Invitacion {
@@ -19,14 +20,14 @@ public class Invitacion {
 
     @ManyToOne
     @JoinColumn(name = "lista_id", nullable = false)
-    private Lista lista; // Lista asociada a la invitación
+    private Lista lista; 
 
-    private boolean usada = false; // Marca si la invitación ya ha sido usada
+    private boolean usada = false; 
 
-    // Fecha de expiración de la invitación (opcional, para controlar caducidad)
+    // Fecha de expiración de la invitación 
     private LocalDateTime fechaExpiracion;
 
-    // Getters y setters
+    private String emailUsuario; // Email del usuario aceptado
     
     public Invitacion() {
     	this.id = UUID.randomUUID().toString();
@@ -53,6 +54,10 @@ public class Invitacion {
 		return fechaExpiracion;
 	}
     
+    public String getEmailUsuario() {
+        return emailUsuario;
+    }
+    
     public void setId(String id) {
 		this.id = id;
 	}
@@ -72,5 +77,9 @@ public class Invitacion {
     public void setFechaExpiracion(LocalDateTime fechaExpiracion) {
 		this.fechaExpiracion = fechaExpiracion;
 	}
+    
+    public void setEmailUsuario(String emailUsuario) {
+        this.emailUsuario = emailUsuario;
+    }
 
 }

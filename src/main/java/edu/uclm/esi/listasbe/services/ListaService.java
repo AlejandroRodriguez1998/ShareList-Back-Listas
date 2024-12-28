@@ -3,6 +3,7 @@ package edu.uclm.esi.listasbe.services;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import edu.uclm.esi.listasbe.dao.ListaDao;
 import edu.uclm.esi.listasbe.dao.ProductoDao;
+import edu.uclm.esi.listasbe.model.Invitacion;
 import edu.uclm.esi.listasbe.model.Lista;
 import edu.uclm.esi.listasbe.model.Producto;
 import edu.uclm.esi.listasbe.ws.WsListas;
@@ -33,7 +35,7 @@ public class ListaService {
 	private WsListas wsListas;
 
 	public List<Lista> obtenerListas(String email) {
-		return this.listaDao.findListasByEmailUsuario(email);
+	    return this.listaDao.findListasByEmailUsuario(email);
 	}
 
 	public Lista crearLista(String nombre, String email, Boolean isPremium) {

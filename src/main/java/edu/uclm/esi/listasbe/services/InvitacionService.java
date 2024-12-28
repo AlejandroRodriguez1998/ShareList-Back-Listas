@@ -94,6 +94,27 @@ public class InvitacionService {
         listaDao.save(lista);
 
         invitacion.setUsada(true);
+        invitacion.setEmailUsuario(emailUsuario);
         invitacionDao.save(invitacion);
     }
+    
+	public void eliminarInvitacion(String id) {
+		 Invitacion invitacion = invitacionDao.findById(id)
+				 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitación no encontrada"));
+		 
+		// Obtener la lista asociada a la invitación
+	    Lista lista = invitacion.getLista();
+	    
+	    // Eliminar el correo del usuario asociado a la invitación
+	    String emailUsuario = invitacion.getEmailUsuario();
+	    if (lista.getEmailsUsuarios().contains(emailUsuario)) {
+	        lista.getEmailsUsuarios().remove(emailUsuario);
+	    }
+
+	    // Guardar la lista después de eliminar el correo
+	    listaDao.save(lista);
+
+	    // Finalmente, eliminar la invitación
+	    invitacionDao.delete(invitacion);
+	}
 }

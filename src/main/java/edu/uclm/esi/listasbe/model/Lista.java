@@ -14,6 +14,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 
 @Entity
 public class Lista {
@@ -100,5 +101,5 @@ public class Lista {
 	        this.emailsUsuarios.add(emailUsuario);
 	    }
 	}
-	
+
 }
