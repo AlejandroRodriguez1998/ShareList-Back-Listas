@@ -54,23 +54,27 @@ public class ListaController {
 	
 	@PutMapping("/comprar")
     public Producto comprar(HttpServletRequest request, @RequestBody Map<String, Object> compra) {
-        String email = (String) request.getAttribute("userEmail");
-        if (email == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para comprar.");
-        }
+		String email = (String) request.getAttribute("userEmail");
+	    if (email == null) {
+	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tiene permisos para comprar.");
+	    }
+	    
+	    Float cantidadComprar = ((Number) compra.get("udsCompradas")).floatValue();
+	    String idProducto = (String) compra.get("idProducto");
 
-        Float udsCompradas = ((Number) compra.get("udsCompradas")).floatValue();
-        String idProducto = (String) compra.get("idProducto");
+	    if (idProducto == null || idProducto.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacío.");
+	    }
 
-        if (idProducto == null || idProducto.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacío.");
-        }
+	    if (cantidadComprar == null || cantidadComprar <= 0) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad a comprar es inválida.");
+	    }
 
-        if (udsCompradas == null || udsCompradas <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de unidades compradas es inválida.");
-        }
-
-        return this.listaService.comprar(idProducto, udsCompradas, email);
+	    try {
+	        return listaService.comprar(idProducto, cantidadComprar, email);
+	    } catch (IllegalArgumentException ex) {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+	    }
     }
 	
     @PostMapping("/addProducto")
@@ -92,6 +96,7 @@ public class ListaController {
         Producto producto = new Producto();
         producto.setNombre((String) productoMap.get("nombre"));
         producto.setUdsPedidas(((Number) productoMap.get("udsPedidas")).floatValue());
+        producto.setUdsPendientes(((Number) productoMap.get("udsPedidas")).floatValue());
 
         if (producto.getNombre().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El producto no puede estar vacío.");

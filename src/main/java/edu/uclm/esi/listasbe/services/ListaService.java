@@ -122,9 +122,14 @@ public class ListaService {
 		if (!lista.getEmailsUsuarios().contains(email)) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a esta lista.");
 		}
+		
+		if (productoExistente.getUdsPedidas() > producto.getUdsPedidas()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No puedes disminuir las unidades pedidas.");
+		}
 
 		productoExistente.setNombre(producto.getNombre());
 		productoExistente.setUdsPedidas(producto.getUdsPedidas());
+		productoExistente.setUdsPendientes(producto.getUdsPedidas() - producto.getUdsCompradas());
 
 		this.productoDao.save(productoExistente);
 
