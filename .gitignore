@@ -1,2 +1,56 @@
+# Directorios de compilación de Maven
+/target/
+/bin/
 
-/target
+# Configuración de Eclipse
+/.settings/
+/.classpath
+/.project
+
+# Configuración de IntelliJ IDEA
+/.idea/
+/*.iml
+/*.iws
+/out/
+
+# Archivos temporales de sistema
+.DS_Store
+Thumbs.db
+
+# Logs y bases de datos
+*.log
+*.sql
+*.sqlite
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Archivos generados automáticamente
+/generated-sources/
+/generated-test-sources/
+/m2e-wtp/
+/web-resources/META-INF/
+
+# Otros archivos que no se deben incluir
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.tmp
+*.bak
+
+# Ignorar archivos de cobertura de código
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.lcov
+
+# Ignorar archivos de sistema operativo
+ehthumbs.db
+Icon?
