@@ -65,6 +65,7 @@ public class WsListas extends TextWebSocketHandler {
         			jso.put("nombre", producto.getNombre());
         			jso.put("udsPedidas", producto.getUdsPedidas());
         			jso.put("udsCompradas", producto.getUdsCompradas());
+        			jso.put("udsPendientes", producto.getUdsPendientes());
             	} 
             
     			TextMessage message = new TextMessage(jso.toString());

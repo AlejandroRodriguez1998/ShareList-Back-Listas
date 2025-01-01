@@ -77,8 +77,6 @@ public class ListaService {
 		producto.setLista(lista);
 		this.productoDao.save(producto);
 
-		lista.add(producto);
-
 		this.wsListas.notificar(idLista, producto, "nuevoProducto");
 
 		return lista;

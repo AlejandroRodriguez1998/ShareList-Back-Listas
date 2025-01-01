@@ -69,7 +69,9 @@ public class Lista {
 	}
 	
 	public void add(Producto producto) {
-		this.productos.add(0, producto);
+		if (!this.productos.contains(producto)) {
+			this.productos.add(0, producto);
+	    }
 	}
 	
 	public List<Producto> getProductos() {
