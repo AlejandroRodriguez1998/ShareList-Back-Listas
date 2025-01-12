@@ -13,6 +13,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.Dimension;
@@ -47,8 +49,14 @@ public class TestSelenium {
 	@BeforeAll // @BeforeEach
 	public void setUp() {
 		System.setProperty("webdriver.chrome.driver",
-				"C:\\Users\\Andrés\\Downloads\\chromedriver-win64\\chromedriver.exe");
+				"C:\\\\Users\\\\Andrés\\\\Downloads\\\\chromedriver-win64\\\\chromedriver.exe");
+		
+		
+		//webdriver.edge.driver
+		//C:\\Users\\Andrés\\Downloads\\edgedriver_win64\\msedgedriver.exe
+		
 		ChromeOptions options = new ChromeOptions();
+		//EdgeOptions options = new EdgeOptions();
 		options.addArguments("--ignore-certificate-errors");
 		options.addArguments("--allow-insecure-localhost");
 
@@ -56,12 +64,14 @@ public class TestSelenium {
 		options.addArguments("--remote-allow-origins=*");
 
 		driverPepe = new ChromeDriver(options);
+		//driverPepe = new EdgeDriver(options);
 		new WebDriverWait(driverPepe, Duration.ofSeconds(3));
 
 		jsExecutor = (JavascriptExecutor) driverPepe;
 		vars = new HashMap<String, Object>();
 
 		driverAna = new ChromeDriver(options);
+		//driverPepe = new EdgeDriver(options);
 		new WebDriverWait(driverAna, Duration.ofSeconds(3));
 
 		jsExecutor2 = (JavascriptExecutor) driverAna;
