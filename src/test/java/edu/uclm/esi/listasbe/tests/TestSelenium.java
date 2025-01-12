@@ -59,6 +59,7 @@ public class TestSelenium {
 		//EdgeOptions options = new EdgeOptions();
 		options.addArguments("--ignore-certificate-errors");
 		options.addArguments("--allow-insecure-localhost");
+		
 
 		options.setBinary("C:\\Users\\Andrés\\Downloads\\chrome-win64\\\\chrome.exe");
 		options.addArguments("--remote-allow-origins=*");
@@ -97,6 +98,32 @@ public class TestSelenium {
 
 	}
 
+	public void testCookies() {
+		
+		driverPepe.get("chrome://settings/trackingProtection?search=cookies");
+		
+		JavascriptExecutor js = (JavascriptExecutor) driverPepe;
+		js.executeScript("document.body.style.zoom='50%'");
+
+		this.pausa(1000);
+		
+		WebElement botonAñadirPepe = driverPepe
+				.findElement(By.xpath("cr-button"));
+		
+		botonAñadirPepe.click();
+		
+		this.pausa(1000);
+		
+		WebElement input = driverPepe.findElement(By.xpath("/html/body/settings-ui//div[2]/settings-main//settings-basic-page//div[1]/settings-section[5]/settings-privacy-page//settings-animated-pages/settings-subpage[10]/settings-cookies-page//site-list//add-site-dialog//cr-dialog/div[2]/cr-input//div[2]/div/div[1]/div[2]/input"));
+		
+		input.sendKeys("https://localhost:4200");
+		
+		WebElement boton = driverPepe.findElement(By.xpath("/html/body/settings-ui//div[2]/settings-main//settings-basic-page//div[1]/settings-section[5]/settings-privacy-page//settings-animated-pages/settings-subpage[10]/settings-cookies-page//site-list//add-site-dialog//cr-dialog/div[3]/cr-button[2]"));
+		
+		boton.click();		
+		driverPepe.get("https://localhost:4200/");
+	}
+	
 	@Test
 	@Order(0)
 	public void testRegistroPepe() {
@@ -131,10 +158,11 @@ public class TestSelenium {
 		WebDriverWait wait = new WebDriverWait(driverPepe, Duration.ofSeconds(10));
 		WebElement nombreLista = wait.until(ExpectedConditions.presenceOfElementLocated(
 				By.xpath("/html/body/app-root/div/div/app-gestor-listas/section/div/div[2]/div/div/div[1]/h5")));
-		assertEquals("Cumpleaños", nombreLista);
+		
+		assertEquals("Cumpleaños", nombreLista.getText());
 
 		WebElement botonAñadirProducto = driverPepe.findElement(
-				By.xpath("/html/body/app-root/div/div/app-gestor-listas/section/div/div[2]/div/div/div[2]/div[2]/span[2]"));
+				By.xpath("/html/body/app-root/div/div/app-gestor-listas/section/div/div[2]/div/div/div[2]/div[2]/span[1]"));
 		botonAñadirProducto.click();
 
 		this.pausa(1000);
